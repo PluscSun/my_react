@@ -70,4 +70,34 @@ export const jsx = (
   return ReactElement(type, key, ref, props);
 };
 
-export const jsxDEV = jsx;
+export const jsxDEV = (type: ElementType, config: any) => {
+  // 需要特殊处理三个属性
+  let key: Key = null;
+  let ref: Ref = null;
+  const props: Props = {};
+
+  // 遍历config的键
+  for (const prop in config) {
+    // config的值
+    const val = config[prop];
+    // 处理key，转字符串
+    if (prop === 'key') {
+      if (val !== undefined) {
+        key = '' + val;
+      }
+      continue;
+    }
+    // 处理ref
+    if (prop === 'ref') {
+      if (val != undefined) {
+        ref = val;
+      }
+      continue;
+    }
+    // 处理其他非原型链上属性
+    if ({}.hasOwnProperty.call(config, prop)) {
+      props[prop] = val;
+    }
+  }
+  return ReactElement(type, key, ref, props);
+};

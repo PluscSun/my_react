@@ -1,4 +1,4 @@
-import path, { __dirname } from 'path';
+import path from 'path';
 import fs from 'fs';
 
 import ts from 'rollup-plugin-typescript2';
