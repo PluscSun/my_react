@@ -33,59 +33,60 @@ export const commitMutationEffects = (finishedWork: FiberNode) => {
   }
 };
 
-
-const commitMutationEffectsOnfiber = (finishedWork: FiberNode) {
+const commitMutationEffectsOnfiber = (finishedWork: FiberNode) => {
   const flags = finishedWork.flags;
 
-  if((flags & Placement) !== NoFlags){
+  if ((flags & Placement) !== NoFlags) {
     commitPlacement(finishedWork);
     finishedWork.flags &= ~Placement;
   }
-}
+};
 
-const commitPlacement = (finishedWork: FiberNode)=>{
-  if(__DEV__) {
+const commitPlacement = (finishedWork: FiberNode) => {
+  if (__DEV__) {
     console.warn('执行placement操作', finishedWork);
   }
   // parentDom
   const hostParent = getHostParent(finishedWork);
   // finishedWork ~~ Dom
   appendPlacementNodeIntoContainer(finishedWork, hostParent);
-
-}
+};
 
 function getHostParent(fiber: FiberNode) {
   let parent = fiber.return;
 
-  while(parent) {
+  while (parent) {
     const parentTag = parent.tag;
     // HostComponent HostRoot
-    if(parentTag===HostComponent){
+    if (parentTag === HostComponent) {
       return parent.stateNode as Container;
     }
-    if(parentTag === HostRoot) {
+    if (parentTag === HostRoot) {
       return (parent.stateNode as FiberRootNode).container;
     }
     parent = parent.return;
   }
 
-  if(__DEV__){
+  if (__DEV__) {
     console.warn('未找到HostParent');
   }
 }
 
-function appendPlacementNodeIntoContainer(finishedWork: FiberNode, hostParent: Container){
+function appendPlacementNodeIntoContainer(
+  finishedWork: FiberNode,
+  hostParent: Container
+) {
   // fiber host
-  if(finishedWork.tag === HostComponent || finishedWork.tag === HostText){
+  if (finishedWork.tag === HostComponent || finishedWork.tag === HostText) {
     appendChildToContainer(finishedWork.stateNode, hostParent);
     return;
   }
   const child = finishedWork.child;
-  if(child !== null){
+  if (child !== null) {
     appendPlacementNodeIntoContainer(child, hostParent);
     let sibling = child.sibling;
 
-    while(sibling !== null){
+    while (sibling !== null) {
       appendPlacementNodeIntoContainer(sibling, hostParent);
       sibling = sibling.sibling;
     }
