@@ -1,4 +1,4 @@
-export type WorkTags =
+export type WorkTag =
   | typeof FunctionComponent
   | typeof HostRoot
   | typeof HostComponent

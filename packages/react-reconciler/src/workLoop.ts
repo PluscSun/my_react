@@ -1,6 +1,8 @@
 import { beginWork } from './beginWork';
+import { commitMutationEffects } from './commitWork';
 import { completeWork } from './completeWork';
 import { FiberNode, FiberRootNode, createWorkInProgress } from './fiber';
+import { MutationMask, NoFlags } from './fiberFlags';
 import { HostRoot } from './workTags';
 
 // 工作中的树指针
@@ -40,11 +42,51 @@ export function renderRoot(root: FiberRootNode) {
       workLoop();
       break;
     } catch (e) {
-      console.log('workloop error');
+      if (__DEV__) {
+        console.log('workloop error', e);
+      }
       workInProgress = null;
     }
     // eslint-disable-next-line no-constant-condition
   } while (true);
+
+  const finishedWork = root.current.alternate;
+  root.finishedWork = finishedWork;
+
+  // wip fiberNode树，flags，执行操作
+  commitRoot(root);
+}
+
+function commitRoot(root: FiberRootNode) {
+  const finishedWork = root.finishedWork;
+  if (finishedWork === null) {
+    return;
+  }
+  if (__DEV__) {
+    console.warn('commit阶段开始', finishedWork);
+  }
+
+  // 重置
+  root.finishedWork = null;
+
+  // 判断三个子阶段是否需要执行操作
+  const subtreeHasEffect =
+    (finishedWork.subtreeFlags & MutationMask) !== NoFlags;
+  const rootHasEffect = (finishedWork.flags & MutationMask) !== NoFlags;
+
+  if (subtreeHasEffect || rootHasEffect) {
+    // beforeMutation
+    // mutation
+    commitMutationEffects(finishedWork);
+    // Placement
+
+    // 切换fiber树
+    root.current = finishedWork;
+
+    // layout
+  } else {
+    root.current = finishedWork;
+  }
 }
 
 // 工作循环

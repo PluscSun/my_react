@@ -18,12 +18,12 @@ export const createUpdate = <State>(action: Action<State>): Update<State> => {
 };
 
 // updateQueue实例化方法
-export const createUpdateQueue = <Action>() => {
+export const createUpdateQueue = <State>() => {
   return {
     shared: {
       pending: null
     }
-  } as UpdateQueue<Action>;
+  } as UpdateQueue<State>;
 };
 
 // update入队方法
