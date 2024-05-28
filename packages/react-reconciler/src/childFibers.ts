@@ -11,6 +11,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
     element: ReactElementType
   ) {
     // 根据element创建fiber返回
+    currentFiber;
     const fiber = createFiberFromElement(element);
     fiber.return = returnFiber;
     return fiber;
@@ -20,6 +21,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
     currentFiber: FiberNode | null,
     content: string | number
   ) {
+    currentFiber;
     const fiber = new FiberNode(HostText, { content }, null);
     fiber.return = returnFiber;
     return fiber;
