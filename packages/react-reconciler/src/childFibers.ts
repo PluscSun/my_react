@@ -11,7 +11,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
     element: ReactElementType
   ) {
     // 根据element创建fiber返回
-    currentFiber;
+    console.warn(currentFiber);
     const fiber = createFiberFromElement(element);
     fiber.return = returnFiber;
     return fiber;
@@ -21,7 +21,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
     currentFiber: FiberNode | null,
     content: string | number
   ) {
-    currentFiber;
+    console.warn(currentFiber);
     const fiber = new FiberNode(HostText, { content }, null);
     fiber.return = returnFiber;
     return fiber;
@@ -29,7 +29,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
   function placeSingleChild(fiber: FiberNode) {
     // current fiber为null,首屏渲染
     if (shouldTrackEffects && fiber.alternate === null) {
-      fiber.flags != Placement;
+      fiber.flags |= Placement;
     }
     return fiber;
   }
