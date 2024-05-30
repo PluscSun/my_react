@@ -20,6 +20,7 @@ export class FiberNode {
 
   // 作为工作单元
   memorizedProps: Props | null;
+  // 指向hooks链表
   memorizedState: any;
   alternate: FiberNode | null;
   flags: Flags;
