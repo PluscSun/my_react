@@ -14,7 +14,11 @@ export default [
   Prettier,
   {
     rules: {
-      '@typescript-eslint/no-explicit-any': ['off']
+      '@typescript-eslint/no-explicit-any': ['off'],
+      'jest/globals': ['off']
     }
+  },
+  {
+    ignores: ['packages/**/__tests__/**']
   }
 ];
