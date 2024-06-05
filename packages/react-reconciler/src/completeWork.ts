@@ -11,7 +11,11 @@ import {
   HostRoot,
   HostText
 } from './workTags';
-import { NoFlags } from './fiberFlags';
+import { NoFlags, Update } from './fiberFlags';
+
+function markUpdate(fiber: FiberNode) {
+  fiber.flags |= Update;
+}
 
 export const completeWork = (wip: FiberNode) => {
   const newProps = wip.pendingProps;
@@ -35,6 +39,11 @@ export const completeWork = (wip: FiberNode) => {
       if (current !== null && wip.stateNode) {
         // stateNode保存的dom
         // update
+        const oldText = current.memorizedProps.content;
+        const newText = newProps.content;
+        if (oldText !== newText) {
+          markUpdate(wip);
+        }
       } else {
         //1.构建dom
         const instance = createTextInstance(newProps.content);
