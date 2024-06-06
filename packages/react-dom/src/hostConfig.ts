@@ -1,15 +1,17 @@
 import { FiberNode } from 'react-reconciler/src/fiber';
 import { HostText } from 'react-reconciler/src/workTags';
+import { DOMElement, updateFiberProps } from './synTheticEvent';
+import { Props } from 'shared/ReactTypes';
 
 export type Container = Element;
 export type Instance = Element;
 export type TextInstance = Text;
 
-export const createInstance = (type: string, props: any) => {
+export const createInstance = (type: string, props: Props) => {
   // todo处理props
-  props;
   const element = document.createElement(type);
-  return element;
+  updateFiberProps(element as DOMElement, props);
+  return element as DOMElement;
 };
 
 export const appendInitialChild = (
