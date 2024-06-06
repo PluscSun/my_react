@@ -23,13 +23,32 @@ function ChildReconciler(shouldTrackEffects: boolean) {
     }
   }
 
+  /**
+   * @description: 遍历所有兄弟节点删除之
+   * @return {*}
+   * @use: reconcileSingleElement中，单节点（指变化后只有一个节点）diff，之前的多个节点有一个可复用，删除其他
+   */
+  function deleteRemainingChildren(
+    returnFiber: FiberNode,
+    currentFirstChild: FiberNode | null
+  ) {
+    if (!shouldTrackEffects) {
+      return;
+    }
+    let childToDelete = currentFirstChild;
+    while (childToDelete !== null) {
+      deleteChild(returnFiber, childToDelete);
+      childToDelete = childToDelete.sibling;
+    }
+  }
+
   function reconcileSingleElement(
     returnFiber: FiberNode,
     currentFiber: FiberNode | null,
     element: ReactElementType
   ) {
     const key = element.key;
-    work: if (currentFiber !== null) {
+    while (currentFiber !== null) {
       // update
       if (currentFiber.key === key) {
         //key相同
@@ -38,22 +57,26 @@ function ChildReconciler(shouldTrackEffects: boolean) {
             // type相同，复用
             const existing = useFiber(currentFiber, element.props);
             existing.return = returnFiber;
+            // 当前节点可复用，标记剩下的节点删除
+            deleteRemainingChildren(returnFiber, currentFiber.sibling);
             return existing;
           }
-          //key相同type不同删掉旧的
-          deleteChild(returnFiber, currentFiber);
-          break work;
+          //key相同,type不同不存在可能性，删掉所有旧的
+          deleteRemainingChildren(returnFiber, currentFiber);
+          break;
         } else {
           if (__DEV__) {
             console.warn('还为实现的react类型', element);
-            break work;
+            break;
           }
         }
       } else {
-        // 删掉旧的
+        // key不同, 删掉旧的，遍历sibling找其他的
         deleteChild(returnFiber, currentFiber);
+        currentFiber = currentFiber.sibling;
       }
     }
+    // mount
     // 根据element创建fiber返回
     const fiber = createFiberFromElement(element);
     fiber.return = returnFiber;
@@ -65,17 +88,20 @@ function ChildReconciler(shouldTrackEffects: boolean) {
     currentFiber: FiberNode | null,
     content: string | number
   ) {
-    if (currentFiber !== null) {
+    while (currentFiber !== null) {
       //update
       if (currentFiber.tag === HostText) {
         // 类型没变，可以复用
         const existing = useFiber(currentFiber, { content });
         existing.return = returnFiber;
+        deleteRemainingChildren(returnFiber, currentFiber.sibling);
         return existing;
       }
       // <div> -> hahaha类型变了，删掉原来的节点
       deleteChild(returnFiber, currentFiber);
+      currentFiber = currentFiber.sibling;
     }
+    // mount
     const fiber = new FiberNode(HostText, { content }, null);
     fiber.return = returnFiber;
     return fiber;
