@@ -6,9 +6,8 @@ import {
   createWorkInProgress
 } from './fiber';
 import { REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE } from 'shared/ReactSymbols';
-import { HostText } from './workTags';
+import { Fragment, HostText } from './workTags';
 import { ChildDeletion, Placement } from './fiberFlags';
-import { Fragment } from 'react';
 
 type ExistingChildren = Map<string | number, FiberNode>;
 
@@ -255,11 +254,11 @@ function ChildReconciler(shouldTrackEffects: boolean) {
           return createFiberFromElement(element);
       }
 
-      // TODO 数组类型
-      if (Array.isArray(element) && __DEV__) {
-        console.warn('还未实现数组类型child');
-        return null;
-      }
+      // // TODO 数组类型
+      // if (Array.isArray(element) && __DEV__) {
+      //   console.warn('还未实现数组类型child');
+      //   return null;
+      // }
     }
 
     if (Array.isArray(element)) {

@@ -1,8 +1,12 @@
 import { Key, Props, ReactElementType, Ref } from 'shared/ReactTypes';
-import { FunctionComponent, HostComponent, WorkTag } from './workTags';
+import {
+  Fragment,
+  FunctionComponent,
+  HostComponent,
+  WorkTag
+} from './workTags';
 import { Flags, NoFlags } from './fiberFlags';
 import { Container } from 'hostConfig';
-import { Fragment } from 'react';
 
 export class FiberNode {
   // 节点属性
