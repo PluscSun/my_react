@@ -157,7 +157,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 
       if (lastNewFiber === null) {
         lastNewFiber = newFiber;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
         firstNewFiber = newFiber;
       } else {
         lastNewFiber.sibling = newFiber;
@@ -173,7 +173,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
         // update
         const oldIndex = current.index;
         if (oldIndex < lastPlacedIndex) {
-          // 移动
+          // 移动插入
           newFiber.flags |= Placement;
           continue;
         } else {
@@ -181,7 +181,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
           lastPlacedIndex = oldIndex;
         }
       } else {
-        //mount
+        //mount插入
         newFiber.flags |= Placement;
       }
     }
