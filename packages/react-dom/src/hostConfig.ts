@@ -51,3 +51,16 @@ export function removeChild(
 ) {
   container.removeChild(child);
 }
+
+/**
+ * @description: 调度任务微任务和执行环境相关
+ * @return {*}
+ * @use:
+ */
+export const scheduleMicroTask =
+  typeof queueMicrotask === 'function'
+    ? queueMicrotask
+    : typeof Promise === 'function'
+      ? (callback: (...args: any) => void) =>
+          Promise.resolve(null).then(callback)
+      : setTimeout;
