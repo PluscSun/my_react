@@ -5,4 +5,10 @@ export const Placement = 0b0000001;
 export const Update = 0b0000010;
 export const ChildDeletion = 0b0000100;
 
+// 表示当前fiber上存在副作用需要触发
+export const PassiveEffect = 0b0001000;
+
 export const MutationMask = Placement | Update | ChildDeletion;
+
+// 卸载掉也需要执行return函数
+export const PassiveMask = PassiveEffect | ChildDeletion;
