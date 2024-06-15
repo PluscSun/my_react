@@ -59,6 +59,8 @@ export function renderWithHooks(wip: FiberNode, lane: Lane) {
   // 执行hooks会创建新的hook链表
   // 重置 hooks 链表
   wip.memorizedState = null;
+  // 重置 effect 链表
+  wip.updateQueue = null;
   renderLane = lane;
 
   const current = wip.alternate;
@@ -90,21 +92,72 @@ const HooksDispatcherOnMount: Dispatcher = {
 };
 
 const HooksDispatcherOnUpdate: Dispatcher = {
-  useState: updateState
+  useState: updateState,
+  useEffect: updateEffect
 };
 
 function mountEffect(create: EffectCallback | void, deps: any[] | void) {
   const hook = mountWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
+
   (currentlyRenderingFiber as FiberNode).flags |= PassiveEffect;
 
-  //
   hook.memorizedState = pushEffect(
     Passive | HookHasEffect,
     create,
     undefined,
     nextDeps
   );
+}
+
+function updateEffect(create: EffectCallback | void, deps: any[] | void) {
+  const hook = updateWorkInProgressHook();
+  const nextDeps = deps === undefined ? null : deps;
+  (currentlyRenderingFiber as FiberNode).flags |= PassiveEffect;
+
+  //
+  let destroy: EffectCallback | void;
+
+  if (currentHook !== null) {
+    const prevEffect = currentHook.memorizedState as Effect;
+    destroy = prevEffect.destroy;
+
+    if (nextDeps !== null) {
+      // 浅比较依赖,相等，不应执行副作用
+      const prevDeps = prevEffect.deps;
+      if (areHookInputsEqual(nextDeps, prevDeps)) {
+        hook.memorizedState = pushEffect(Passive, create, destroy, nextDeps);
+        return;
+      }
+    }
+
+    // 浅比较依赖不相等
+    // 那么fiber要被标记PassiveEffect执行
+    (currentlyRenderingFiber as FiberNode).flags |= PassiveEffect;
+    // 同时Effect结构要被标记为HookHasEffect
+    hook.memorizedState = pushEffect(
+      Passive | HookHasEffect,
+      create,
+      destroy,
+      nextDeps
+    );
+  }
+}
+
+function areHookInputsEqual(
+  nextDeps: EffectDeps,
+  prevDeps: EffectDeps
+): boolean {
+  if (prevDeps === null || nextDeps === null) {
+    return false;
+  }
+  for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
+    if (Object.is(prevDeps[i], nextDeps[i])) {
+      continue;
+    }
+    return false;
+  }
+  return true;
 }
 
 function pushEffect(
@@ -143,6 +196,8 @@ function pushEffect(
   return effect;
 }
 
+// 新增的fiber上的fcUpdateQueue用于保存effect链表
+// 普通的updateQueue作用是把一系列可能导致重新re-render的情况放入queue中
 function createFCUpdateQueue<State>() {
   const updateQueue = createUpdateQueue<State>() as FCUpdateQueue<State>;
   updateQueue.lastEffect = null;
