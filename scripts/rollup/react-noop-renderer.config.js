@@ -6,31 +6,39 @@ import {
 import generatePackageJson from 'rollup-plugin-generate-package-json';
 import alias from '@rollup/plugin-alias';
 
-const { name, module, peerDependencies } = getPackageJSON('react-dom');
-// react-dom包的路径
+const { name, module, peerDependencies } = getPackageJSON(
+  'react-noop-renderer'
+);
+// react-noop-renderer包的路径
 const pkgPath = resolvePkgPath(name);
-// react-dom产物路径
+// react-noop-renderer产物路径
 const pkgDistPath = resolvePkgPath(name, true);
 
 export default [
-  // react-dom
+  // react-noop-renderer
   {
     input: `${pkgPath}/${module}`,
     output: [
       {
         file: `${pkgDistPath}/index.js`,
-        name: 'ReactDOM',
-        format: 'umd'
-      },
-      {
-        file: `${pkgDistPath}/client.js`,
-        name: 'client',
+        name: 'ReactNoopRenderer',
         format: 'umd'
       }
     ],
     external: [...Object.keys(peerDependencies), 'scheduler'],
     plugins: [
-      ...getBaseRollupPlugins(),
+      ...getBaseRollupPlugins({
+        typescript: {
+          exclude: ['./packages/react-dom/**/*'],
+          tsconfigOverride: {
+            compilerOptions: {
+              paths: {
+                hostConfig: [`./${name}/src/hostConfig.ts`]
+              }
+            }
+          }
+        }
+      }),
       // 指定hostConfig的指向
       alias({
         entries: {
@@ -51,18 +59,5 @@ export default [
         })
       })
     ]
-  },
-  // react-test-utils
-  {
-    input: `${pkgPath}/test-utils.ts`,
-    output: [
-      {
-        file: `${pkgDistPath}/test-utils.js`,
-        name: 'testUtils',
-        format: 'umd'
-      }
-    ],
-    external: ['react-dom', 'react'],
-    plugins: [...getBaseRollupPlugins()]
   }
 ];

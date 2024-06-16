@@ -57,7 +57,7 @@ function dispatchEvent(container: Container, eventType: string, e: Event) {
     return;
   }
   // 1.收集沿途的事件的回调
-  const { bubble, capture } = collectpaths(
+  const { bubble, capture } = collectPaths(
     targetElement as DOMElement,
     container,
     eventType
@@ -92,7 +92,7 @@ function getEventCallbackNameFromEventType(
   }[eventType];
 }
 
-function collectpaths(
+function collectPaths(
   targetElement: DOMElement,
   container: Container,
   eventType: string

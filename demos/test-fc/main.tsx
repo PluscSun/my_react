@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
+import ReactNoopRender from 'react-noop-renderer';
 
 function App() {
   const [num, setNum] = useState<number>(100);
@@ -27,4 +28,10 @@ function Child() {
   return <span>big-react</span>;
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+// ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+
+const root = ReactNoopRender.createRoot();
+
+root.render(<Child />);
+
+window.root = root;

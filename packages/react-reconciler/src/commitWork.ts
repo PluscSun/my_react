@@ -3,6 +3,7 @@ import {
   Instance,
   appendChildToContainer,
   commitUpdate,
+  insertChildToContainer,
   removeChild
 } from 'hostConfig';
 import { FiberNode, FiberRootNode, PendingPassiveEffects } from './fiber';
@@ -346,12 +347,4 @@ function insertOrAppendPlacementNodeIntoContainer(
       sibling = sibling.sibling;
     }
   }
-}
-
-export function insertChildToContainer(
-  child: Instance,
-  container: Container,
-  before: Instance
-) {
-  container.insertBefore(child, before);
 }
