@@ -48,7 +48,7 @@ export function markRootFinished(root: FiberRootNode, lane: Lane) {
 // 在react中，使用的是Lane优先级
 // 解耦两个不同的优先级体系，但也需要转换方式
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function lanesToSchedulerPriority(lanes: Lanes) {
+export function lanesToSchedulerPriority(lanes: Lanes) {
   const lane = getHighestPriorityLane(lanes);
   if (lane === SyncLane) {
     return unstable_ImmediatePriority;
