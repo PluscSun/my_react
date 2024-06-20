@@ -33,6 +33,11 @@ export function getHighestPriorityLane(lanes: Lanes): Lane {
   return lanes & -lanes;
 }
 
+// 判断优先级是否足够
+export function isSubsetOfLanes(set: Lanes, subset: Lane) {
+  return (set & subset) === subset;
+}
+
 /**
  * @description: 从当前root的pendingLanes中移除对应的lane
  * @param {FiberRootNode} root
@@ -47,7 +52,7 @@ export function markRootFinished(root: FiberRootNode, lane: Lane) {
 // 使用调度器调度时，使用的是调度器优先级
 // 在react中，使用的是Lane优先级
 // 解耦两个不同的优先级体系，但也需要转换方式
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 export function lanesToSchedulerPriority(lanes: Lanes) {
   const lane = getHighestPriorityLane(lanes);
   if (lane === SyncLane) {

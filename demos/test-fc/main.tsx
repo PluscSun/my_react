@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import ReactNoopRender from 'react-noop-renderer';
+import ReactNoopRender from 'react-dom';
 
 function App() {
   const [num, setNum] = useState<number>(100);

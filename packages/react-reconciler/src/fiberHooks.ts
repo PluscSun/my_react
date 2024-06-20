@@ -2,6 +2,7 @@ import { Dispatch, Dispatcher } from 'react/src/currentDispatcher';
 import { FiberNode } from './fiber';
 import internals from 'shared/internals';
 import {
+  Update,
   UpdateQueue,
   createUpdate,
   createUpdateQueue,
@@ -16,9 +17,9 @@ import { HookHasEffect, Passive } from './hookEffectTags';
 
 // 当前render的Fibernode, 方便hooks知道自己的数据保存在哪
 let currentlyRenderingFiber: FiberNode | null = null;
-// 指向当前正在处理的hook
+// mount时，指向当前正在处理（创建）的hook
 let workInProgressHook: Hook | null = null;
-
+// update时，标记当前正在（更新）的hook
 let currentHook: Hook | null = null;
 
 let renderLane: Lane = NoLane;
@@ -32,6 +33,8 @@ interface Hook {
   memorizedState: any;
   updateQueue: unknown;
   next: Hook | null;
+  baseState: any;
+  baseQueue: Update<any> | null;
 }
 
 export interface Effect {
@@ -210,16 +213,42 @@ function updateState<State>(): [State, Dispatch<State>] {
 
   // 计算新state的逻辑
   const queue = hook.updateQueue as UpdateQueue<State>;
+  const baseState = hook.baseState;
+
   const pending = queue.shared.pending;
-  queue.shared.pending = null;
+
+  const current = currentHook as Hook;
+  let baseQueue = current.baseQueue;
+  // 本来在updateState时会清空queue
+  // queue.shared.pending = null;
+  // 所以需要把pending放在一个地方，防止优先级打断清空
+  // 把update放在current中，因为render阶段才会被打断，所以current始终存在
 
   if (pending !== null) {
-    const { memorizedState } = processUpdateQueue(
-      hook.memorizedState,
-      pending,
-      renderLane
-    );
-    hook.memorizedState = memorizedState;
+    // pending update basQueue update保存在current中
+    if (baseQueue !== null) {
+      // 把baseQueue接在pendingUpdate后
+      const baseFirst = baseQueue.next;
+      const pendingFirst = pending.next;
+      baseQueue.next = pendingFirst;
+      pending.next = baseFirst;
+    }
+    baseQueue = pending;
+    // 保存在current中
+    current.baseQueue = pending;
+    queue.shared.pending = null;
+
+    // 如果baseQueue存在
+    if (baseQueue !== null) {
+      const {
+        memorizedState,
+        baseQueue: newBaseQueue,
+        baseState: newBaseState
+      } = processUpdateQueue(baseState, baseQueue, renderLane);
+      hook.memorizedState = memorizedState;
+      hook.baseState = newBaseState;
+      hook.baseQueue = newBaseQueue;
+    }
   }
   return [hook.memorizedState, queue.dispatch as Dispatch<State>];
 }
@@ -254,7 +283,9 @@ function updateWorkInProgressHook(): Hook {
   const newHook: Hook = {
     memorizedState: currentHook.memorizedState,
     updateQueue: currentHook.updateQueue,
-    next: null
+    next: null,
+    baseQueue: currentHook.baseQueue,
+    baseState: currentHook.baseState
   };
   if (workInProgressHook === null) {
     // mount时第一个hook,要创建hook并赋值给fibernode的memostate
@@ -305,7 +336,9 @@ function mountWorkInProgressHook(): Hook {
   const hook: Hook = {
     memorizedState: null,
     next: null,
-    updateQueue: null
+    updateQueue: null,
+    baseQueue: null,
+    baseState: null
   };
   if (workInProgressHook === null) {
     // mount时第一个hook,要创建hook并赋值给fibernode的memostate
